@@ -1,0 +1,288 @@
+{
+  "map": [
+    {
+      "path": "map.tmx",
+      "teleport": [
+        {
+          "x": 24,
+          "y": 23,
+          "destination": "gym.tmx",
+          "exit_x": 11,
+          "exit_y": 13
+        },
+        {
+          "x": 55,
+          "y": 14,
+          "destination": "hospital.tmx",
+          "exit_x": 16,
+          "exit_y": 16
+        }
+      ],
+      "player": {
+        "x": 17.0,
+        "y": 29.0
+      },
+      "enemy_trainers": [
+        {
+          "x": 20.184000000000072,
+          "y": 30.0,
+          "classification": "moving",
+          "facing": "LEFT",
+          "max_tiles": 2
+        },
+        {
+          "x": 44.0,
+          "y": 19.0,
+          "classification": "stationary",
+          "facing": "RIGHT",
+          "max_tiles": 2
+        },
+        {
+          "x": 34.183999999999884,
+          "y": 30.0,
+          "classification": "moving",
+          "facing": "LEFT",
+          "max_tiles": 2
+        },
+        {
+          "x": 42.11920000000008,
+          "y": 13.0,
+          "classification": "moving",
+          "facing": "LEFT",
+          "max_tiles": 3
+        }
+      ],
+      "npcs": [
+      {
+        "type": "shop",
+        "x": 11,
+        "y": 31,
+        "facing": "DOWN"
+      },
+      {
+        "type": "talk",
+        "x": 22,
+        "y": 28,
+        "facing": "LEFT",
+        "dialogue": ["Hello!", "Welcome!"]
+      }
+    ]
+    },
+    {
+      "path": "gym.tmx",
+      "teleport": [
+        {
+          "x": 11,
+          "y": 14,
+          "destination": "map.tmx",
+          "exit_x": 24,
+          "exit_y": 24
+        },
+        {
+          "x": 12,
+          "y": 14,
+          "destination": "map.tmx",
+          "exit_x": 24,
+          "exit_y": 25
+        },
+        {
+          "x": 13,
+          "y": 14,
+          "destination": "map.tmx",
+          "exit_x": 24,
+          "exit_y": 25
+        }
+      ],
+      "player": {
+        "x": 11.0,
+        "y": 13.0
+      },
+      "enemy_trainers": [
+        {
+          "x": 5.0,
+          "y": 8.0,
+          "classification": "stationary",
+          "facing": "DOWN",
+          "max_tiles": 3
+        }
+      ],
+      "npcs": []
+    },
+    {
+      "path": "ocean.tmx",
+      "teleport": [
+        {
+          "x": 1,
+          "y": 11,
+          "destination": "gym.tmx"
+        }
+      ],
+      "player": {
+        "x": 4,
+        "y": 11
+      },
+      "enemy_trainers": [],
+      "npcs": []
+    },
+    {
+      "path": "hospital.tmx",
+      "teleport": [
+        {
+          "x": 13,
+          "y": 19,
+          "destination": "map.tmx",
+          "exit_x": 55,
+          "exit_y": 16
+        },
+        {
+          "x": 14,
+          "y": 19,
+          "destination": "map.tmx",
+          "exit_x": 55,
+          "exit_y": 16
+        },
+        {
+          "x": 15,
+          "y": 19,
+          "destination": "map.tmx",
+          "exit_x": 55,
+          "exit_y": 16
+        },
+        {
+          "x": 16,
+          "y": 19,
+          "destination": "map.tmx",
+          "exit_x": 55,
+          "exit_y": 16
+        },
+        {
+          "x": 17,
+          "y": 19,
+          "destination": "map.tmx",
+          "exit_x": 55,
+          "exit_y": 16
+        },
+        {
+          "x": 18,
+          "y": 19,
+          "destination": "map.tmx",
+          "exit_x": 55,
+          "exit_y": 16
+        }
+      ],
+      "player": {
+        "x": 16.0,
+        "y": 16.0
+      },
+      "enemy_trainers": [],
+      "npcs": []
+    }
+  ],
+  "current_map": "map.tmx",
+  "player": {
+    "x": 17.677323809766694,
+    "y": 29.858690475583142
+  },
+  "bag": {
+    "monsters": [
+      {
+        "name": "Pikachu",
+        "hp": 85,
+        "max_hp": 100,
+        "level": 10,
+        "sprite_path": "menu_sprites/menusprite1.png",
+        "element": "Grass",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Charizard",
+        "hp": 150,
+        "max_hp": 200,
+        "level": 36,
+        "sprite_path": "menu_sprites/menusprite2.png",
+        "element": "Grass",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Blastoise",
+        "hp": 120,
+        "max_hp": 180,
+        "level": 32,
+        "sprite_path": "menu_sprites/menusprite3.png",
+        "element": "Grassr",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Venusaur",
+        "hp": 90,
+        "max_hp": 160,
+        "level": 30,
+        "sprite_path": "menu_sprites/menusprite4.png",
+        "element": "Land",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Gengar",
+        "hp": 110,
+        "max_hp": 140,
+        "level": 28,
+        "sprite_path": "menu_sprites/menusprite5.png",
+        "element": "Electric",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Dragonite",
+        "hp": 180,
+        "max_hp": 220,
+        "level": 41,
+        "sprite_path": "menu_sprites/menusprite6.png",
+        "element": "Ice",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Pikachu",
+        "hp": 60,
+        "max_hp": 60,
+        "level": 6,
+        "sprite_path": "menu_sprites/menusprite1.png",
+        "element": "Water",
+        "evolve_to": null,
+        "evolve_level": null
+      }
+    ],
+    "items": [
+      {
+        "name": "Potion",
+        "count": 5,
+        "sprite_path": "ingame_ui/potion.png"
+      },
+      {
+        "name": "Coins",
+        "count": 3,
+        "sprite_path": "ingame_ui/coin.png"
+      },
+      {
+        "name": "Pokeball",
+        "count": 8,
+        "sprite_path": "ingame_ui/ball.png"
+      },
+      {
+        "name": "Strength Potion",
+        "count": 2,
+        "sprite_path": "ingame_ui/options1.png"
+      },
+      {
+        "name": "Defense Potion",
+        "count": 2,
+        "sprite_path": "ingame_ui/options2.png"
+      }
+    ],
+    "money": 50
+  }
+}
