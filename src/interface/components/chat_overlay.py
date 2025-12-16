@@ -91,7 +91,8 @@ class ChatOverlay(UIComponent):
         if input_manager.key_pressed(pg.K_BACKSPACE):
             self._input_text = self._input_text[:-1]
 
-        if input_manager.key_pressed(pg.K_RETURN):
+        # Accept both main Enter and keypad Enter
+        if input_manager.key_pressed(pg.K_RETURN) or input_manager.key_pressed(pg.K_KP_ENTER):
             txt = self._input_text.strip()
             if txt and self._send_callback:
                 if self._send_callback(txt):

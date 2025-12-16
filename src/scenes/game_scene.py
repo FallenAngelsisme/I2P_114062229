@@ -450,6 +450,19 @@ class GameScene(Scene):
         
         if self.chat_overlay:
             self.chat_overlay.draw(screen)
+        # --- Debug: online manager status (temporary) ---
+        if self.online_manager:
+            try:
+                dbg_x, dbg_y = 10, 10
+                info_font = self.font_small
+                pid = self.online_manager.player_id
+                players = self.online_manager.get_list_players()
+                info_lines = [f"online_id={pid}", f"others={len(players)}"]
+                for i, line in enumerate(info_lines):
+                    surf = info_font.render(line, True, (255, 255, 0))
+                    screen.blit(surf, (dbg_x, dbg_y + i * (info_font.get_height() + 2)))
+            except Exception:
+                pass
         if self.online_manager and self.game_manager.player:
             list_online = self.online_manager.get_list_players()
             for p in self.online_manager.get_list_players():
