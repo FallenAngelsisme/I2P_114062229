@@ -473,9 +473,10 @@ class GameScene(Scene):
                     sprite.stop()
 
                 cam = self.game_manager.player.camera
-                pos = cam.transform_position_as_position(Position(p["x"], p["y"]))
-                sprite.update_pos(pos)
-                sprite.draw(screen)
+                # Use world position and let sprite.draw handle camera transform
+                world_pos = Position(p["x"], p["y"])
+                sprite.update_pos(world_pos)
+                sprite.draw(screen, cam)
             try:
                 self._draw_chat_bubbles(screen, camera)
             except Exception:
