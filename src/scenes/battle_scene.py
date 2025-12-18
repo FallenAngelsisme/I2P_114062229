@@ -292,8 +292,8 @@ class BattleScene(Scene):
         else:
             self.message = "Can't escape!"
             self.message_timer = 2.0
-            self.turn = "enemy"
-            self.battle_state = "attacking"
+            self.turn = "player"
+            self.battle_state = "choose_action"
 
     def open_item_menu(self):
         """打開道具選單"""

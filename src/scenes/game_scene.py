@@ -471,7 +471,7 @@ class GameScene(Scene):
                 if pid not in self.online_sprites:
                     # Use same animation as Entity so we can switch rows/directions
                     self.online_sprites[pid] = Animation(
-                        "character/ow1.png",
+                        "character/ow6.png",
                         ["down", "left", "right", "up"],
                         4,
                         (GameSettings.TILE_SIZE, GameSettings.TILE_SIZE)
