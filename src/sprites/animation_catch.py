@@ -102,6 +102,9 @@ class TargetSprite(Sprite):
         if not self.is_active:
             return
 
+
+        # 跟著滑鼠
+        self.rect.center = pg.mouse.get_pos()
         self.animation_timer += dt
         if self.animation_timer >= self.animation_speed:
             self.animation_timer = 0.0

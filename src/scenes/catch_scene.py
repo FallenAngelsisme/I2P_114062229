@@ -27,6 +27,17 @@ class CatchPokemonScene(Scene):
         super().__init__()
         self.game_manager = game_manager
         
+        self.pokemon_frames = []
+        self.pokemon_sprite = None
+
+        # --- Pokemon movement AI ---
+        self.pokemon_pos = pg.Vector2(860, 360)
+        self.pokemon_target_pos = self.pokemon_pos.copy()
+
+        self.pokemon_speed = 120  # pixels/sec
+        self.pokemon_is_moving = False
+        self.pokemon_rest_timer = 10.0
+
         # --- 寶可夢數據 ---
         self.wild_pokemon = self._generate_wild_pokemon()
         self.catch_attempts = 0
@@ -43,49 +54,53 @@ class CatchPokemonScene(Scene):
         self.font_large = pg.font.Font("assets/fonts/Minecraft.ttf", 40)
         
         # --- 動畫/Sprite 載入 (新的方法) ---
-        self._load_pokemon_sprite_sheet() # 新增：載入動畫幀
+        
         self._setup_target_sprite()       # 新增：設置瞄準框
         self.pokeball_animation = None    # 用於投擲/晃動的 PokeballSprite 實例
-        self.pokemon_animation_timer = 0.0
+        # --- Pokemon animation data ---
+        self.pokemon_sheet = pg.image.load(
+            "assets/images/" + self.wild_pokemon["sprite_path"]
+        ).convert_alpha()
+
+        self.POKE_FRAME_W = 64
+        self.POKE_FRAME_H = 64
+        self.POKE_FRAME_COUNT = 4
+
+        self.pokemon_frames = []
+        for i in range(self.POKE_FRAME_COUNT):
+            frame = pg.Surface((self.POKE_FRAME_W, self.POKE_FRAME_H), pg.SRCALPHA)
+            frame.blit(
+                self.pokemon_sheet,
+                (0, 0),
+                (i * self.POKE_FRAME_W, 0, self.POKE_FRAME_W, self.POKE_FRAME_H)
+            )
+            frame = pg.transform.scale(frame, (128, 128))
+            self.pokemon_frames.append(frame)
+
+        # Animation state (模仿人物動畫)
+        self.pokemon_action = "idle"
         self.pokemon_frame_index = 0
-        
+        self.pokemon_anim_timer = 0.0
+        self.pokemon_anim_speed = 0.12
+        self.pokemon_facing_right = True
+
+        self.pokemon_sprite = self.pokemon_frames[0]
         # --- 訊息顯示 ---
         self.message = f"A wild {self.wild_pokemon['name']} appeared!"
         self.message_timer = 2.0
         
         # --- 按鈕 (維持原樣) ---
-        self.catch_button = Button("UI/raw/UI_Flat_Button02a_3.png", "UI/raw/UI_Flat_Button02a_3.png",
-                                   450, 500, 150, 50, self.start_catch_attempt) # 函數名稱變更
+        
         self.run_button = Button("UI/raw/UI_Flat_Button02a_3.png", "UI/raw/UI_Flat_Button02a_3.png",
                                  650, 500, 150, 50, self.run_away)
+    
+    
 
-    def _load_pokemon_sprite_sheet(self):
-        """載入並切割寶可夢的 Sprite Sheet (1. 寶可夢動畫)"""
-        try:
-            path = "assets/images/" + self.wild_pokemon["sprite_path"]
-            sheet = pg.image.load(path).convert_alpha()
-            sheet_w, sheet_h = sheet.get_size()
-            
-            # 假設：sheet 只有一行，有 4 幀
-            n_keyframes = 4 
-            n_rows = 1 
-            frame_w = sheet_w // n_keyframes
-            frame_h = sheet_h // n_rows 
-            
-            self.pokemon_frames = []
-            for i in range(n_keyframes):
-                frame = pg.Surface((frame_w, frame_h), pg.SRCALPHA)
-                frame.blit(sheet, (0, 0), (i * frame_w, 0, frame_w, frame_h))
-                # 縮放至顯示大小
-                self.pokemon_frames.append(pg.transform.scale(frame, (200, 200)))
-                
-            self.pokemon_sprite = self.pokemon_frames[0]
-            self.pokemon_frame_rate = 0.2 # 每 0.2 秒換一幀
-            
-        except Exception as e:
-            self.pokemon_sprite = None
-            self.pokemon_frames = []
-            Logger.warning(f"Could not load or process sprite sheet: {self.wild_pokemon['sprite_path']}. Error: {e}")
+    def _pick_new_pokemon_target(self):
+        x = random.randint(200, GameSettings.SCREEN_WIDTH - 200)
+        y = random.randint(200, 380)
+        self.pokemon_target_pos = pg.Vector2(x, y)
+        self.pokemon_is_moving = True
 
     def _setup_target_sprite(self):
         """設置瞄準框 Sprite (6. 瞄準遊戲機制)"""
@@ -113,7 +128,19 @@ class CatchPokemonScene(Scene):
             if item.name == "Pokeball":
                 return item.count
         return 0
-    
+    def handle_mouse_click(self):
+        if self.catch_state != CatchState.WAITING_ACTION:
+            return
+
+        if not self.pokemon_sprite:
+            return
+
+        # Use integer coordinates for precise rect tests
+        mouse_pos = tuple(map(int, pg.mouse.get_pos()))
+        pokemon_rect = self.pokemon_sprite.get_rect(center=(int(self.pokemon_pos.x), int(self.pokemon_pos.y)))
+
+        if pokemon_rect.collidepoint(mouse_pos):
+            self.start_catch_attempt()
     def start_catch_attempt(self):
         """點擊 CATCH 按鈕時，啟動瞄準或立即進入投擲"""
         if self.catch_state != CatchState.WAITING_ACTION:
@@ -127,16 +154,14 @@ class CatchPokemonScene(Scene):
             
         # 6. 捕捉的方式：判斷瞄準
         mouse_x, mouse_y = pg.mouse.get_pos()
-        target_rect = self.target_sprite.rect
-        
-        if target_rect.collidepoint(mouse_x, mouse_y):
-            # 點擊成功，給予捕捉率加成
-            self.target_success_rate_modifier = 0.3 # 成功瞄準 +30% 捕捉率
-            sound_manager.play_bgm("RBY 119 Captured a Pokemon!.ogg") # 新增音效
-            self.message = "Great throw! Prepare to catch..."
+        pokemon_rect = self.pokemon_sprite.get_rect(center=(int(self.pokemon_pos.x), int(self.pokemon_pos.y)))
+
+        if pokemon_rect.collidepoint(int(mouse_x), int(mouse_y)):
+            self.target_success_rate_modifier = 0.3
+            self.message = "Great throw!"
         else:
             self.target_success_rate_modifier = 0.0
-            self.message = "Threw the Pokeball..."
+            self.message = "Missed!"
             
         # 消耗寶貝球
         self.game_manager.bag.del_item("Pokeball")
@@ -197,10 +222,10 @@ class CatchPokemonScene(Scene):
     def _generate_wild_pokemon(self):
         """Generate a random wild pokemon我先自己設"""
         pokemon_list = [
-            {"name": "Pikachu", "level": random.randint(3, 7), "sprite_path": "menu_sprites/menusprite1.png"},
-            {"name": "Charmander", "level": random.randint(3, 7), "sprite_path": "menu_sprites/menusprite2.png"},
-            {"name": "Bulbasaur", "level": random.randint(3, 7), "sprite_path": "menu_sprites/menusprite3.png"},
-            {"name": "Squirtle", "level": random.randint(3, 7), "sprite_path": "menu_sprites/menusprite4.png"},
+            {"name": "Pikachu", "level": random.randint(3, 7), "sprite_path": "sprites/sprite1_idle.png"},
+            {"name": "Charmander", "level": random.randint(3, 7), "sprite_path": "sprites/sprite2_idle.png"},
+            {"name": "Bulbasaur", "level": random.randint(3, 7), "sprite_path": "sprites/sprite3_idle.png"},
+            {"name": "Squirtle", "level": random.randint(3, 7), "sprite_path": "sprites/sprite4_idle.png"},
         ]
         return random.choice(pokemon_list)
     @override
@@ -211,15 +236,53 @@ class CatchPokemonScene(Scene):
         sound_manager.set_bgm_volume(GameSettings.AUDIO_VOLUME)
         self.catch_state = CatchState.WILD_APPEAR
 
+    def _update_pokemon_animation(self, dt: float):
+        self.pokemon_anim_timer += dt
+        if self.pokemon_anim_timer >= self.pokemon_anim_speed:
+            self.pokemon_anim_timer = 0.0
+            self.pokemon_frame_index = (
+                self.pokemon_frame_index + 1
+            ) % self.POKE_FRAME_COUNT
+
+            frame = self.pokemon_frames[self.pokemon_frame_index]
+            if not self.pokemon_facing_right:
+                frame = pg.transform.flip(frame, True, False)
+   
+    def _update_pokemon_roaming(self, dt: float):
+        if self.pokemon_is_moving:
+            direction = self.pokemon_target_pos - self.pokemon_pos
+            dist = direction.length()
+
+            if dist < 4:
+                self.pokemon_is_moving = False
+                self.pokemon_rest_timer = 2.0
+                return
+
+            direction = direction.normalize()
+
+            # 面向判斷（只在方向改變時）
+            if direction.x > 0:
+                self.pokemon_facing_right = True
+            elif direction.x < 0:
+                self.pokemon_facing_right = False
+
+            self.pokemon_pos += direction * self.pokemon_speed * dt
+
+        else:
+            self.pokemon_rest_timer -= dt
+            if self.pokemon_rest_timer <= 0:
+                self._pick_new_pokemon_target()
+
+   
     @override
     def update(self, dt: float):
-        # 寶可夢動畫更新 (1. 寶可夢動畫)
-        if self.catch_state not in [CatchState.THROWING_BALL, CatchState.SHAKING]:
-            self.pokemon_animation_timer += dt
-            if self.pokemon_animation_timer >= self.pokemon_frame_rate and self.pokemon_frames:
-                self.pokemon_animation_timer = 0.0
-                self.pokemon_frame_index = (self.pokemon_frame_index + 1) % len(self.pokemon_frames)
-                self.pokemon_sprite = self.pokemon_frames[self.pokemon_frame_index]
+        # --- Pokemon animation (always play) ---
+        self._update_pokemon_animation(dt)
+        # Input events are polled by the engine and recorded in input_manager.
+        # Use input_manager.mouse_pressed to detect clicks here (avoid double-consuming events).
+        from src.core.services import input_manager
+        if input_manager.mouse_pressed(1):
+            self.handle_mouse_click()
         
         # 狀態機邏輯
         if self.catch_state == CatchState.WILD_APPEAR:
@@ -229,11 +292,11 @@ class CatchPokemonScene(Scene):
             else:
                 self.message = "Select an action."
                 self.catch_state = CatchState.WAITING_ACTION
-                self.target_sprite.is_active = True # 瞄準框開始活動
+                
                 
         elif self.catch_state == CatchState.WAITING_ACTION:
             # 更新按鈕和瞄準框
-            self.catch_button.update(dt)
+            
             self.run_button.update(dt)
             self.target_sprite.update(dt)
             
@@ -275,6 +338,29 @@ class CatchPokemonScene(Scene):
             Logger.info("Returning to game scene")
             scene_manager.change_scene("game")
 
+        # --- Pokemon roaming logic ---
+        if self.catch_state == CatchState.WAITING_ACTION:
+            if self.pokemon_is_moving:
+                direction = self.pokemon_target_pos - self.pokemon_pos
+                if direction.length() > 0:
+                    direction = direction.normalize()
+                    if direction.length() < 5:
+                        self.pokemon_is_moving = False
+                        self.pokemon_rest_timer = 10.0
+                    # 判斷面向
+                    if direction.x > 0:
+                        self.pokemon_facing_right = True
+                    elif direction.x < 0:
+                        self.pokemon_facing_right = False
+
+                    self.pokemon_pos += direction * self.pokemon_speed * dt
+
+
+            else:
+                self.pokemon_rest_timer -= dt
+                if self.pokemon_rest_timer <= 0:
+                    self._pick_new_pokemon_target()
+
     @override
     def draw(self, screen: pg.Surface) -> None:
         # Draw background
@@ -282,9 +368,9 @@ class CatchPokemonScene(Scene):
         
         # Draw pokemon sprite (如果沒有在投擲或晃動狀態)
         if self.pokemon_sprite:
-            sprite_x = GameSettings.SCREEN_WIDTH // 2 - 100
-            sprite_y = 150
-            screen.blit(self.pokemon_sprite, (sprite_x, sprite_y))
+            rect = self.pokemon_sprite.get_rect(center=(int(self.pokemon_pos.x), int(self.pokemon_pos.y)))
+            screen.blit(self.pokemon_sprite, rect)
+
         
         # Draw pokemon info
         name_text = self.font_large.render(self.wild_pokemon["name"], True, (255, 255, 255))
@@ -319,9 +405,8 @@ class CatchPokemonScene(Scene):
         
         # Draw buttons (只有在等待操作時顯示)
         if self.catch_state == CatchState.WAITING_ACTION:
-            self.catch_button.draw(screen)
-            catch_text = self.font_small.render("CATCH", True, (0, 0, 0))
-            screen.blit(catch_text, (490, 510))
+            
+            
             
             self.run_button.draw(screen)
             run_text = self.font_small.render("RUN", True, (0, 0, 0))
