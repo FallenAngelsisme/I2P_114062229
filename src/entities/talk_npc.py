@@ -1,41 +1,46 @@
+import random
 import pygame as pg
-from src.utils import GameSettings, Direction, Position, PositionCamera, Logger
+from src.utils import GameSettings, Direction, Position, PositionCamera
 from src.core import GameManager
 from src.sprites.animation import Animation
 from src.entities.entity import Entity
-from src.core.services import input_manager, scene_manager
 from src.sprites.sprite import Sprite
+from src.core.services import input_manager, scene_manager
 
 
-class ShopNPC(Entity):
+class TalkNPC(Entity):
     detected: bool
-    def __init__(self, x, y, game_manager: GameManager, facing: Direction = Direction.DOWN):
+
+    def __init__(
+        self,
+        x,
+        y,
+        game_manager: GameManager,
+        dialogues: list[str],
+        facing: Direction = Direction.DOWN
+    ):
         super().__init__(x, y, game_manager)
+
+        self.dialogues = dialogues
         self.facing = facing
-        self.type = "shop"
-        # 初始化動畫（四方向，但不播放步行）
+        self.detected = False
+        self.type = "talk"
+        # 角色動畫（站立）
         self.animation = Animation(
-            "character/ow2.png",
+            "character/ow4.png",
             ["down", "left", "right", "up"],
             4,
-           (GameSettings.TILE_SIZE, GameSettings.TILE_SIZE),
+            (GameSettings.TILE_SIZE, GameSettings.TILE_SIZE),
         )
+        self._set_direction(facing)
 
-        self._set_direction(facing)  # ← 現在 animation 已存在，可以正確切方向
-
-        # 警告符號
+        # 驚嘆號
         self.warning_sign = Sprite(
             "exclamation.png",
             (GameSettings.TILE_SIZE // 2, GameSettings.TILE_SIZE // 2)
         )
-        self.warning_sign.update_pos(Position(
-            x + GameSettings.TILE_SIZE // 4,
-            y - GameSettings.TILE_SIZE // 2
-        ))
 
-        self.detected = False
-
-    # ⭐ NPC 的偵測範圍（跟 enemy trainer 類似，2x2 tiles）
+    # 偵測範圍
     def _get_interact_rect(self):
         size = GameSettings.TILE_SIZE
         return pg.Rect(
@@ -46,30 +51,16 @@ class ShopNPC(Entity):
         )
 
     def _set_direction(self, direction: Direction):
-        """只切換站立方向，不播放走路動畫"""
         self.direction = direction
-
-        if self.animation:
-            # 依照方向切換 Sprite row
-            if direction == Direction.DOWN:
-                self.animation.switch("down")
-            elif direction == Direction.LEFT:
-                self.animation.switch("left")
-            elif direction == Direction.RIGHT:
-                self.animation.switch("right")
-            else:
-                self.animation.switch("up")
+        self.animation.switch(direction.name.lower())
 
     def update(self, dt: float):
-        # 玩家是否靠近
         self.animation.accumulator = 0
 
         player = self.game_manager.player
         if not player:
             self.detected = False
             return
-
-        interact_rect = self._get_interact_rect()
 
         player_rect = pg.Rect(
             player.position.x,
@@ -78,8 +69,7 @@ class ShopNPC(Entity):
             GameSettings.TILE_SIZE
         )
 
-        self.detected = interact_rect.colliderect(player_rect)
-
+        self.detected = self._get_interact_rect().colliderect(player_rect)
 
         if self.detected:
             self.warning_sign.update_pos(Position(
@@ -87,7 +77,20 @@ class ShopNPC(Entity):
                 self.position.y - GameSettings.TILE_SIZE // 2
             ))
 
+            # ⭐ 互動鍵（E 或 SPACE）
+            if input_manager.key_pressed(pg.K_e):
+                self.talk()
+
         self.animation.update_pos(self.position)
+
+    def talk(self):
+        text = random.choice(self.dialogues)
+
+        # 使用你專案裡的對話場景 / 對話框
+        scene_manager.change_scene(
+            "dialog",
+            text=text
+        )
 
     def draw(self, screen, camera: PositionCamera):
         self.animation.draw(screen, camera)
@@ -95,28 +98,27 @@ class ShopNPC(Entity):
         if self.detected:
             self.warning_sign.draw(screen, camera)
 
-        # debug：畫出偵測範圍
         if GameSettings.DRAW_HITBOXES:
             pg.draw.rect(
                 screen,
-                (255, 255, 0),
+                (0, 255, 255),
                 camera.transform_rect(self._get_interact_rect()),
                 2
             )
 
-
     @classmethod
     def from_dict(cls, data, game_manager: GameManager):
-        facing = Direction[data.get("facing", "DOWN")]
         return cls(
             data["x"] * GameSettings.TILE_SIZE,
             data["y"] * GameSettings.TILE_SIZE,
             game_manager,
-            facing
+            data.get("dialogues", ["Hello there!"]),
+            Direction[data.get("facing", "DOWN")]
         )
 
     def to_dict(self):
         base = super().to_dict()
-        base["type"] = "shop"
+        base["type"] = "talk"
+        base["dialogues"] = self.dialogues
         base["facing"] = self.direction.name
         return base

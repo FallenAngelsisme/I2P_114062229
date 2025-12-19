@@ -111,27 +111,27 @@ EVOLUTION_DATA = {
         "to": "Charizard",
         "level": 10,
         "sprite": "menu_sprites/menusprite2.png",
-        "stat_bonus": {"hp": 40, "attack": 20}
+        "stat_bonus": {"hp": 40, "attack": 20, "defense": 15}
     },
 
     "Charizard": {
         "to": "Blastoise",
         "level": 10,
         "sprite": "menu_sprites/menusprite3.png",
-        "stat_bonus": {"hp": 40, "attack": 20}
+        "stat_bonus": {"hp": 40, "attack": 20, "defense": 15}
     },
     # === 小火龍進化鏈 ===
     "Charmander": {
         "to": "Charmeleon",
         "level": 10,
         "sprite": "menu_sprites/menusprite8.png",
-        "stat_bonus": {"hp": 20, "attack": 10}
+        "stat_bonus": {"hp": 20, "attack": 10, "defense": 15}
     },
     "Charmeleon": {
         "to": "Charizard",
         "level": 10,
         "sprite": "menu_sprites/menusprite9.png",
-        "stat_bonus": {"hp": 50, "attack": 30}
+        "stat_bonus": {"hp": 50, "attack": 30, "defense": 15}
     },
 
     
@@ -140,13 +140,13 @@ EVOLUTION_DATA = {
         "to": "Ivysaur",
         "level": 10,
         "sprite": "menu_sprites/menusprite2.png",
-        "stat_bonus": {"hp": 22, "attack": 9}
+        "stat_bonus": {"hp": 22, "attack": 9, "defense": 15}
     },
     "Ivysaur": {
         "to": "Venusaur",
         "level": 10,
         "sprite": "menu_sprites/menusprite3.png",
-        "stat_bonus": {"hp": 48, "attack": 28}
+        "stat_bonus": {"hp": 48, "attack": 28, "defense": 15}
     },
     
     # === 波波進化鏈 ===
@@ -154,13 +154,13 @@ EVOLUTION_DATA = {
         "to": "Pidgeotto",
         "level": 10,
         "sprite": "menu_sprites/pidgeotto.png",
-        "stat_bonus": {"hp": 15, "attack": 12}
+        "stat_bonus": {"hp": 15, "attack": 12, "defense": 15}
     },
     "Pidgeotto": {
         "to": "Pidgeot",
         "level": 10,
         "sprite": "menu_sprites/pidgeot.png",
-        "stat_bonus": {"hp": 35, "attack": 25}
+        "stat_bonus": {"hp": 35, "attack": 25, "defense": 15}
     },
     
     # === 小拉達進化鏈 ===
@@ -168,7 +168,7 @@ EVOLUTION_DATA = {
         "to": "Raticate",
         "level": 10,
         "sprite": "menu_sprites/raticate.png",
-        "stat_bonus": {"hp": 30, "attack": 18}
+        "stat_bonus": {"hp": 30, "attack": 18, "defense": 15}
     },
     
     # === 烈雀進化鏈 ===
@@ -176,7 +176,7 @@ EVOLUTION_DATA = {
         "to": "Fearow",
         "level": 10,
         "sprite": "menu_sprites/fearow.png",
-        "stat_bonus": {"hp": 28, "attack": 22}
+        "stat_bonus": {"hp": 28, "attack": 22, "defense": 15}
     },
     
     # === 阿柏蛇進化鏈 ===
@@ -184,7 +184,7 @@ EVOLUTION_DATA = {
         "to": "Arbok",
         "level": 102,
         "sprite": "menu_sprites/arbok.png",
-        "stat_bonus": {"hp": 32, "attack": 20}
+        "stat_bonus": {"hp": 32, "attack": 20, "defense": 15}
     },
     
     
@@ -273,7 +273,6 @@ class EvolutionManager:
         return False
 
     def evolve_monster(self, monster: Monster) -> bool:
-        """執行怪獸進化，成功回傳 True"""
         if not self.can_evolve(monster):
             return False
             
@@ -283,18 +282,22 @@ class EvolutionManager:
         monster.name = evo["to"]
         monster.sprite_path = evo["sprite"]
         
-        # 2. 更新屬性 (HP/MaxHP)
+        # 2. 更新血量 (HP/MaxHP)
         hp_bonus = evo["stat_bonus"].get("hp", 0)
         monster.max_hp += hp_bonus
         monster.hp = monster.max_hp # 進化後回滿血
         
-        # 3. 更新 Attack (如果 Monster 有這個屬性)
-        # monster.attack = getattr(monster, "attack", monster.level*2 + 20) + evo["stat_bonus"].get("attack", 0)
+        # 3. 更新 攻擊與防禦 (確保 Monster 物件有這兩個屬性，若無則初始化)
+        # 參考 BattleScene 的基礎公式: level * 2 + 20
+        if not hasattr(monster, 'attack'):
+            monster.attack = monster.level * 2 + 20
+        if not hasattr(monster, 'defense'):
+            monster.defense = monster.level * 1.5 + 10
+            
+        monster.attack += evo["stat_bonus"].get("attack", 0)
+        monster.defense += evo["stat_bonus"].get("defense", 0)
         
-        # 4. 更新下一階進化資訊
-        # (這裡假設我們只需要檢查當前是否有下一階的資料，不需要像舊邏輯那樣更新 evolve_to/evolve_level 屬性)
-
-        # 重新檢查進化條件 (可選，通常不用)
+        Logger.info(f"{monster.name} evolved! Atk+{evo['stat_bonus'].get('attack', 0)}, Def+{evo['stat_bonus'].get('defense', 0)}")
         return True
     
     def get_next_name(self, monster_name: str) -> str | None:

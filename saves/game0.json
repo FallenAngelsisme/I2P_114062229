@@ -16,7 +16,21 @@
           "destination": "hospital.tmx",
           "exit_x": 16,
           "exit_y": 16
+        },{
+          "x": 39,
+          "y": 29,
+          "destination": "ocean.tmx",
+          "exit_x": 3,
+          "exit_y": 10
+        },
+        {
+          "x": 39,
+          "y": 30,
+          "destination": "ocean.tmx",
+          "exit_x": 3,
+          "exit_y": 10
         }
+        
       ],
       "player": {
         "x": 16.0,
@@ -58,7 +72,18 @@
           "y": 31.0,
           "type": "shop",
           "facing": "DOWN"
-        }
+        },
+        {
+        "x": 27.0,
+        "y": 26.0,
+        "type": "talk",
+        "facing": "LEFT",
+        "dialogues": [
+          "u r gay",
+          "u r definetly gay",
+          "gay as fxck"
+        ]
+      }
       ]
     },
     {
@@ -99,15 +124,27 @@
           "max_tiles": 3
         }
       ],
-      "npcs": []
+      "npcs": [{
+        "x": 18.0,
+        "y": 7.0,
+        "type": "talk",
+        "facing": "DOWN",
+        "dialogues": [
+          "RUN!!!!! Escape from CS!!",
+          "DON'T LOOK BACK!!!",
+          "DON'T STOP RUNNING!!!"
+        ]
+      }]
     },
     {
       "path": "ocean.tmx",
       "teleport": [
         {
-          "x": 1,
-          "y": 11,
-          "destination": "gym.tmx"
+          "x": 0,
+          "y": 10,
+          "destination": "map.tmx",
+          "exit_x": 36,
+          "exit_y": 30
         }
       ],
       "player": {
@@ -168,7 +205,12 @@
         "y": 16.0
       },
       "enemy_trainers": [],
-      "npcs": []
+      "npcs": [{
+          "x": 15.0,
+          "y": 3.0,
+          "type": "shop",
+          "facing": "DOWN"
+        }]
     }
   ],
   "current_map": "map.tmx",

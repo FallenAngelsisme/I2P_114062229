@@ -62,15 +62,7 @@ class BattleScene(Scene):
         
         # 怪獸選擇按鈕（最多顯示6隻）
         self.monster_select_buttons = []
-        for i in range(6):
-            row = i // 3
-            col = i % 3
-            btn = Button(
-                "UI/raw/UI_Flat_Banner03a.png", "UI/raw/UI_Flat_Banner03a.png",
-                300 + col * 250, 200 + row * 120, 220, 100,
-                lambda idx=i: self.select_monster(idx)
-            )
-            self.monster_select_buttons.append(btn)
+        
         
         # 戰鬥按鈕
         self.attack_button = Button(
@@ -125,11 +117,12 @@ class BattleScene(Scene):
         
         # 野生怪獸池（用於隨機生成敵人）
         self.wild_monster_pool = [
-            {"name": "Wild Charizard", "element": "Fire", "sprite": "sprites/sprite2_attack.png", "spriteenter": "sprites/sprite2.png", "base_hp": 40, "base_attack": 20},
+            {"name": "Wild Charizard", "element": "Grass", "sprite": "sprites/sprite2_attack.png", "spriteenter": "sprites/sprite2.png", "base_hp": 40, "base_attack": 20},
             {"name": "Wild Blastoise", "element": "Water", "sprite": "sprites/sprite3_attack.png","spriteenter": "sprites/sprite3.png", "base_hp": 80, "base_attack": 25},
             {"name": "Wild Venusaur", "element": "Grass", "sprite": "sprites/sprite4_attack.png", "spriteenter": "sprites/sprite4.png","base_hp": 60, "base_attack": 28},
             {"name": "Wild Gengar", "element": "Electric", "sprite": "sprites/sprite5_attack.png", "spriteenter": "sprites/sprite5.png","base_hp": 80, "base_attack": 15},
-            {"name": "Wild Dragonite", "element": "Normal", "sprite": "sprites/sprite6_attack.png", "spriteenter": "sprites/sprite6.png","base_hp": 70, "base_attack": 20},
+            {"name": "Wild Charmander", "element": "Fire", "sprite": "sprites/sprite7_attack.png", "spriteenter": "sprites/sprite7.png","base_hp": 80, "base_attack": 15},
+            {"name": "Wild Dragonite", "element": "Ice", "sprite": "sprites/sprite6_attack.png", "spriteenter": "sprites/sprite6.png","base_hp": 70, "base_attack": 20},
         ]
     def get_attack_anim(self, element):
         """每次攻擊都產生新的動畫物件避免卡住"""
@@ -489,6 +482,22 @@ class BattleScene(Scene):
         self.selected_monster_index = None
         self.player_monster = None
         
+        monsters = self.game_manager.bag._monsters_data
+        self.monster_select_buttons.clear()
+
+        for i in range(len(monsters)):
+            row = i // 3
+            col = i % 3
+            btn = Button(
+                "UI/raw/UI_Flat_Banner03a.png",
+                "UI/raw/UI_Flat_Banner03a.png",
+                300 + col * 250,
+                200 + row * 120,
+                220,
+                100,
+                lambda idx=i: self.select_monster(idx)
+            )
+            self.monster_select_buttons.append(btn)
         # 生成隨機敵人
         self.generate_random_enemy()
         self.load_enemy_sprite()
@@ -705,7 +714,7 @@ class BattleScene(Scene):
             self.current_player_anim.draw(screen, enemy_center_x, enemy_center_y, scale=5, flip=True)
 
         # HP條
-        self.draw_hp_bar(screen, 650, 280, 200, 20, 
+        self.draw_hp_bar(screen, 750, 280, 200, 20, 
                         self.enemy_monster["hp"]/self.enemy_monster["max_hp"])
         self.draw_hp_bar(screen, 100, 450, 200, 20, 
                         self.player_monster["hp"]/self.player_monster["max_hp"])
@@ -715,7 +724,7 @@ class BattleScene(Scene):
             f"{self.enemy_monster['name']} Lv.{self.enemy_monster['level']} ({self.enemy_monster['element']})", 
             True, (255, 255, 255)
         )
-        screen.blit(enemy_info, (650, 250))
+        screen.blit(enemy_info, (750, 250))
         
         player_info = self.font_small.render(
             f"{self.player_monster['name']} Lv.{self.player_monster['level']} ({self.player_monster['element']})", 

@@ -38,7 +38,7 @@ class ShopScene(Scene):
         center_x = self.SCREEN_WIDTH // 2
         
         # 購買按鈕 X 座標：位於面板右側邊緣內縮
-        buy_button_x = center_x + self.CARD_WIDTH // 2 - self.BUY_BUTTON_SIZE // 2 - 30 
+        buy_button_x = center_x + self.CARD_WIDTH // 2 - self.BUY_BUTTON_SIZE // 2 - 60
 
         for i, item in enumerate(self.items_for_sale):
             btn = Button(
@@ -146,7 +146,7 @@ class ShopScene(Scene):
         # --- 3. 標題與金錢 ---
         
         # 標題 (位於面板**中間頂部**，不會被金錢和返回鍵擋住)
-        title_text = "POKÉMON SHOP"
+        title_text = "POKEMON SHOP"
         title_surface = self.font_title.render(title_text, True, self.COLOR_FRAME)
         shadow_surface = self.font_title.render(title_text, True, (0, 0, 0))
         

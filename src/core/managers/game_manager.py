@@ -209,10 +209,10 @@ class GameManager:
                     npc = ShopNPC.from_dict(npc_data, gm)
                     gm.npcs[m["path"]].append(npc)
 
-                '''elif npc_data["type"] == "talk":
+                elif npc_data["type"] == "talk":
                     from src.entities.talk_npc import TalkNPC
                     npc = TalkNPC.from_dict(npc_data, gm)
-                    gm.npcs[m["path"]].append(npc)'''
+                    gm.npcs[m["path"]].append(npc)
                         
         Logger.info("Loading Player")
         player_data = data.get("player")

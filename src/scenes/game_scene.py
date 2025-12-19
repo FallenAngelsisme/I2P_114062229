@@ -325,11 +325,15 @@ class GameScene(Scene):
         for npc in self.game_manager.current_npcs:
             npc.update(dt)
             if npc.detected and input_manager.key_pressed(pygame.K_SPACE):
-    
-                from src.scenes.shop_scene import ShopScene
-                scene_manager.register_scene("shop", ShopScene(self.game_manager))
-                scene_manager.change_scene("shop")
-
+                if npc.type == "shop":
+                    from src.scenes.shop_scene import ShopScene
+                    scene_manager.register_scene("shop", ShopScene(self.game_manager))
+                    scene_manager.change_scene("shop")
+                elif npc.type == "talk":
+                    from src.scenes.talk_scene import TalkScene
+                    scene_manager.register_scene("talk", TalkScene(npc.dialogues))
+                    scene_manager.change_scene("talk")
+                
         if self.game_manager.player:
             player_rect = pg.Rect(
                 self.game_manager.player.position.x,
