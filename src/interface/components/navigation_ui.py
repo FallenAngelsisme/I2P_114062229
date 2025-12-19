@@ -32,7 +32,7 @@ class NavigationUI:
         self.places = [
             {"name": "Gym", "x": 24, "y": 24},
             {"name": "Hospital", "x": 55, "y": 15},
-            {"name": "Poke Center", "x": 10, "y": 80},
+            {"name": "Poke Center", "x": 16, "y": 28},
             
         ]
         

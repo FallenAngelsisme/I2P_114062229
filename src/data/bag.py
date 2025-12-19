@@ -347,8 +347,8 @@ class Bag:
                         if i not in self.evolve_buttons:
                             self.evolve_buttons[i] = ImageButton(
                                 img=self.evolve_icon_img,
-                                x=x_start + 400,
-                                y=y + 40,
+                                x=x_start + 380,
+                                y=y+10 ,
                                 width=48,
                                 height=48,
                                 on_click=lambda idx=i: self._open_evolve_dialog(idx)
@@ -356,11 +356,11 @@ class Bag:
 
                         # 更新按鈕位置（如果 layout 會動）
                         btn = self.evolve_buttons[i]
-                        btn.rect.topleft = (x_start + 400, y + 40)
+                        btn.rect.topleft = (x_start + 380, y+10 )
 
                         self.evolve_button_rects[i] = btn
                         btn.draw(screen)
-                        Logger.info(f"  ✓ Drew evolution button at ({x_start + 400}, {y + 40})")
+                        Logger.info(f"  ✓ Drew evolution button at ({x_start + 380}, {y + 10})")
                 
                 y += 90
             

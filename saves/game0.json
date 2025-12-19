@@ -24,8 +24,8 @@
       },
       "enemy_trainers": [
         {
-          "x": 16.082400000000135,
-          "y": 30.0,
+          "x": 20.0,
+          "y": 31.0,
           "classification": "moving",
           "facing": "RIGHT",
           "max_tiles": 2
@@ -173,7 +173,7 @@
   ],
   "current_map": "map.tmx",
   "player": {
-    "x": 12.224000000000009,
+    "x": 16.224000000000009,
     "y": 30.660000000000007
   },
   "bag": {
@@ -204,7 +204,7 @@
         "max_hp": 180,
         "level": 32,
         "sprite_path": "menu_sprites/menusprite3.png",
-        "element": "Grassr",
+        "element": "Grass",
         "evolve_to": null,
         "evolve_level": null
       },
@@ -245,6 +245,16 @@
         "level": 6,
         "sprite_path": "menu_sprites/menusprite1.png",
         "element": "Water",
+        "evolve_to": null,
+        "evolve_level": null
+      },
+      {
+        "name": "Charmander",
+        "hp": 60,
+        "max_hp": 60,
+        "level": 11,
+        "sprite_path": "menu_sprites/menusprite7.png",
+        "element": "Fire",
         "evolve_to": null,
         "evolve_level": null
       }

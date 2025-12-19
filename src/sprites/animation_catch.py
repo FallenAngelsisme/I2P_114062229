@@ -41,8 +41,14 @@ class PokeballSprite(Sprite):
             t = self.elapsed_time / self.travel_time
             
             if t >= 1.0:
-                # 投擲完成，進入捕捉狀態
+                # 投擲完成，確保位置在目標，更新 rect，再進入捕捉狀態
                 t = 1.0
+                # 設為目標位置
+                self.pos = self.target_pos.copy()
+                self.rect.center = (int(self.pos.x), int(self.pos.y))
+                # 最後設定旋轉角度為 0（或保留最後角度）
+                self.image = pg.transform.rotate(self.original_image, -t * 720)
+                self.rect = self.image.get_rect(center=self.rect.center)
                 return True # 返回 True 通知場景進入下一個狀態
             
             # 線性插值 (Lerp)

@@ -1,5 +1,7 @@
 import pygame as pg
 import random
+import os
+import re
 from typing import override
 from src.data.evolution import EVOLUTION_DATA
 from src.data.elements import compute_element_multiplier
@@ -33,11 +35,17 @@ class BattleScene(Scene):
         self.battle_state = "choose_monster"  # 先選擇怪獸
         self.message = "Choose your monster!"
         self.message_timer = 2.0
+
         
         # 保存原始數據
         self.original_player_data = None
         self.selected_monster_index = None  # 記錄玩家選的是哪一隻
         
+        #
+        self.player_is_attacking = False
+        self.enemy_is_attacking = False
+        self.player_attack_offset = 0
+        self.enemy_attack_offset = 0
         # 當前戰鬥中的怪獸
         self.player_monster = None
         self.enemy_monster = None
@@ -94,34 +102,87 @@ class BattleScene(Scene):
             "Fire": "assets/images/attack/attack4.png",
             "Water": "assets/images/attack/attack3.png",
             "Grass": "assets/images/attack/attack6.png",
-            "Electric": "assets/images/attack/attack7.png",
+            "Electric": "assets/images/attack/attack2.png",
             "Normal": "assets/images/attack/attack1.png",
+            "Ice": "assets/images/attack/attack1.png",
+            "Land": "assets/images/attack/attack7.png",
         }
         
         self.current_player_anim = None
         self.current_enemy_anim = None
-        self.play_player_attack_anim = False
-        self.play_enemy_attack_anim = False
         
         # 怪獸圖片緩存
         self.player_sprite = None
         self.enemy_sprite = None
+        # Animated frames
+        self.player_frames = []
+        self.enemy_frames = []
+        self.player_frame_index = 0
+        self.enemy_frame_index = 0
+        self.player_anim_timer = 0.0
+        self.enemy_anim_timer = 0.0
+        self.monster_anim_speed = 0.12
         
         # 野生怪獸池（用於隨機生成敵人）
         self.wild_monster_pool = [
-            {"name": "Wild Charizard", "element": "Fire", "sprite": "menu_sprites/menusprite2.png", "spriteenter": "sprites/sprite2.png", "base_hp": 40, "base_attack": 20},
-            {"name": "Wild Blastoise", "element": "Water", "sprite": "menu_sprites/menusprite3.png","spriteenter": "sprites/sprite3.png", "base_hp": 80, "base_attack": 25},
-            {"name": "Wild Venusaur", "element": "Grass", "sprite": "menu_sprites/menusprite4.png", "spriteenter": "sprites/sprite4.png","base_hp": 60, "base_attack": 28},
-            {"name": "Wild Gengar", "element": "Electric", "sprite": "menu_sprites/menusprite5.png", "spriteenter": "sprites/sprite5.png","base_hp": 80, "base_attack": 15},
-            {"name": "Wild Dragonite", "element": "Normal", "sprite": "menu_sprites/menusprite6.png", "spriteenter": "sprites/sprite6.png","base_hp": 70, "base_attack": 20},
+            {"name": "Wild Charizard", "element": "Fire", "sprite": "sprites/sprite2_attack.png", "spriteenter": "sprites/sprite2.png", "base_hp": 40, "base_attack": 20},
+            {"name": "Wild Blastoise", "element": "Water", "sprite": "sprites/sprite3_attack.png","spriteenter": "sprites/sprite3.png", "base_hp": 80, "base_attack": 25},
+            {"name": "Wild Venusaur", "element": "Grass", "sprite": "sprites/sprite4_attack.png", "spriteenter": "sprites/sprite4.png","base_hp": 60, "base_attack": 28},
+            {"name": "Wild Gengar", "element": "Electric", "sprite": "sprites/sprite5_attack.png", "spriteenter": "sprites/sprite5.png","base_hp": 80, "base_attack": 15},
+            {"name": "Wild Dragonite", "element": "Normal", "sprite": "sprites/sprite6_attack.png", "spriteenter": "sprites/sprite6.png","base_hp": 70, "base_attack": 20},
         ]
     def get_attack_anim(self, element):
         """每次攻擊都產生新的動畫物件避免卡住"""
         if element not in self.attack_animations:
             return None
         path = self.attack_animations[element]
-        anim = AnimationSheet(path, 64, 64, 4)
+        anim = AnimationSheet(path, 96, 96, 4)
         return anim
+
+    def _load_animated_frames(self, rel_path: str, frame_w: int = 96, frame_h: int = 96, count: int = 4, scale=(150,150)):
+        """嘗試把精靈表切成多幀；失敗時回退到單張圖。回傳 Surface list。"""
+        frames = []
+        try:
+            # 檔案不存在就直接回傳空清單（避免大量噪音錯誤訊息）
+            if not os.path.exists(rel_path):
+                return []
+
+            sheet = pg.image.load(rel_path).convert_alpha()
+            sw, sh = sheet.get_size()
+            # 如果 sheet 小於單幀尺寸或無法切割，視為單張圖
+            if sw < frame_w or sh < frame_h:
+                img = pg.transform.scale(sheet, scale)
+                frames = [img]
+                return frames
+
+            # 如果 sheet 寬度明顯可以切割多幀，以 count 為準；否則用 sw//frame_w
+            if sw >= frame_w * count:
+                actual_count = count
+            else:
+                actual_count = max(1, sw // frame_w)
+
+            for i in range(actual_count):
+                surf = pg.Surface((frame_w, frame_h), pg.SRCALPHA)
+                surf.blit(sheet, (0, 0), (i * frame_w, 0, frame_w, frame_h))
+                surf = pg.transform.scale(surf, scale)
+                frames.append(surf)
+
+            if not frames:
+                img = pg.transform.scale(sheet, scale)
+                frames = [img]
+        except Exception as e:
+            # 只有在檔案存在但載入失敗時才記錄錯誤
+            if os.path.exists(rel_path):
+                Logger.error(f"Failed to load animated frames {rel_path}: {e}")
+                try:
+                    img = pg.image.load(rel_path).convert_alpha()
+                    frames = [pg.transform.scale(img, scale)]
+                except Exception:
+                    frames = []
+            else:
+                frames = []
+
+        return frames
 
     def generate_random_enemy(self):
         """隨機生成野生敵人"""
@@ -184,19 +245,63 @@ class BattleScene(Scene):
     def load_sprites(self):
         """載入怪獸圖片"""
         try:
-            self.player_sprite = pg.image.load(
-                "assets/images/" + self.player_monster["sprite_path"]
-            ).convert_alpha()
-            self.player_sprite = pg.transform.scale(self.player_sprite, (150, 150))
+            path = "assets/images/" + self.player_monster["sprite_path"]
+            self.player_frames = self._load_animated_frames(path, frame_w=96, frame_h=96, count=4, scale=(150,150))
+            # If only a single frame was found, try to derive an *_attack variant (e.g. sprite.png -> sprite_attack.png)
+            if len(self.player_frames) <= 1:
+                base, ext = os.path.splitext(path)
+                # Candidates to try for attack frames
+                candidates = [base + "_attack" + ext]
+                # If original is a menu_sprites menuspriteN, derive sprites/spriteN_attack
+                m = re.search(r"menu_sprites/menusprite(\d+)", path)
+                if m:
+                    n = m.group(1)
+                    candidates.append(os.path.join(os.path.dirname(path), "..", f"sprites/sprite{n}_attack{ext}"))
+                    candidates.append(f"assets/images/sprites/sprite{n}_attack{ext}".replace('assets/images/',''))
+                    # proper absolute candidate
+                    candidates.append(f"assets/images/sprites/sprite{n}_attack{ext}")
+
+                # normalize and try candidates until one yields multiple frames
+                for cand in candidates:
+                    attack_frames = self._load_animated_frames(cand, frame_w=96, frame_h=96, count=4, scale=(150,150))
+                    if len(attack_frames) > 1:
+                        self.player_frames = attack_frames
+                        break
+
+            if self.player_frames:
+                self.player_frame_index = 0
+                self.player_sprite = self.player_frames[0]
+            else:
+                # fallback single image
+                self.player_sprite = pg.image.load(path).convert_alpha()
+                self.player_sprite = pg.transform.scale(self.player_sprite, (150,150))
         except Exception as e:
             Logger.error(f"Failed to load player sprite: {e}")
             self.player_sprite = None
             
         try:
-            self.enemy_sprite = pg.image.load(
-                "assets/images/" + self.enemy_monster["sprite_path"]
-            ).convert_alpha()
-            self.enemy_sprite = pg.transform.scale(self.enemy_sprite, (150, 150))
+            path = "assets/images/" + self.enemy_monster["sprite_path"]
+            self.enemy_frames = self._load_animated_frames(path, frame_w=96, frame_h=96, count=4, scale=(150,150))
+            if len(self.enemy_frames) <= 1:
+                base, ext = os.path.splitext(path)
+                candidates = [base + "_attack" + ext]
+                m = re.search(r"menu_sprites/menusprite(\d+)", path)
+                if m:
+                    n = m.group(1)
+                    candidates.append(f"assets/images/sprites/sprite{n}_attack{ext}")
+
+                for cand in candidates:
+                    attack_frames = self._load_animated_frames(cand, frame_w=96, frame_h=96, count=4, scale=(150,150))
+                    if len(attack_frames) > 1:
+                        self.enemy_frames = attack_frames
+                        break
+
+            if self.enemy_frames:
+                self.enemy_frame_index = 0
+                self.enemy_sprite = self.enemy_frames[0]
+            else:
+                self.enemy_sprite = pg.image.load(path).convert_alpha()
+                self.enemy_sprite = pg.transform.scale(self.enemy_sprite, (150,150))
         except Exception as e:
             Logger.error(f"Failed to load enemy sprite: {e}")
             self.enemy_sprite = None
@@ -223,9 +328,11 @@ class BattleScene(Scene):
         if self.turn != "player" or self.battle_state != "choose_action":
             return
 
-        # 播玩家攻擊動畫
+        self.player_is_attacking = True
+        self.player_frame_index = 0
+        self.player_anim_timer = 0.0
+        # 播玩家攻擊動畫效果（大畫面攻擊特效）
         self.current_player_anim = self.get_attack_anim(self.player_monster["element"])
-        self.play_player_attack_anim = True
 
         # 計算傷害
         mult = compute_element_multiplier(self.player_monster["element"], self.enemy_monster["element"])
@@ -254,8 +361,10 @@ class BattleScene(Scene):
         if self.enemy_monster["hp"] <= 0:
             return
 
+        self.enemy_is_attacking = True
+        self.enemy_frame_index = 0
+        self.enemy_anim_timer = 0.0
         self.current_enemy_anim = self.get_attack_anim(self.enemy_monster["element"])
-        self.play_enemy_attack_anim = True
 
         mult = compute_element_multiplier(self.enemy_monster["element"], self.player_monster["element"])
         base_damage = self.enemy_monster["attack"]
@@ -395,10 +504,14 @@ class BattleScene(Scene):
     def load_enemy_sprite(self):
         """只載入敵人圖片"""
         try:
-            self.enemy_sprite = pg.image.load(
-                "assets/images/" + self.enemy_monster["sprite_path"]
-            ).convert_alpha()
-            self.enemy_sprite = pg.transform.scale(self.enemy_sprite, (150, 150))
+            path = "assets/images/" + self.enemy_monster["sprite_path"]
+            self.enemy_frames = self._load_animated_frames(path, frame_w=96, frame_h=96, count=4, scale=(150,150))
+            if self.enemy_frames:
+                self.enemy_frame_index = 0
+                self.enemy_sprite = self.enemy_frames[0]
+            else:
+                self.enemy_sprite = pg.image.load(path).convert_alpha()
+                self.enemy_sprite = pg.transform.scale(self.enemy_sprite, (150,150))
         except Exception as e:
             Logger.error(f"Failed to load enemy sprite: {e}")
             self.enemy_sprite = None
@@ -411,6 +524,57 @@ class BattleScene(Scene):
     @override
     def update(self, dt: float):
         """更新戰鬥邏輯"""
+        ATTACK_MOVE_DISTANCE = 40
+        ATTACK_MOVE_SPEED = 200 
+        # Always update idle animations for monsters
+        # player
+        if self.player_is_attacking and self.player_frames and len(self.player_frames) > 1:
+            self.player_anim_timer += dt
+            if self.player_anim_timer >= self.monster_anim_speed:
+                self.player_anim_timer = 0.0
+                self.player_frame_index += 1
+
+                if self.player_frame_index >= len(self.player_frames):
+                    self.player_frame_index = 0
+                    self.player_is_attacking = False
+
+                self.player_sprite = self.player_frames[self.player_frame_index]
+        else:
+            # 沒攻擊 → 固定第一幀
+            if self.player_frames:
+                self.player_sprite = self.player_frames[0]
+        
+        # enemy
+        if self.enemy_is_attacking and self.enemy_frames and len(self.enemy_frames) > 1:
+            self.enemy_anim_timer += dt
+            if self.enemy_anim_timer >= self.monster_anim_speed:
+                self.enemy_anim_timer = 0.0
+                self.enemy_frame_index += 1
+
+                if self.enemy_frame_index >= len(self.enemy_frames):
+                    self.enemy_frame_index = 0
+                    self.enemy_is_attacking = False
+
+                self.enemy_sprite = self.enemy_frames[self.enemy_frame_index]
+        else:
+            # 沒攻擊 → 固定第一幀
+            if self.enemy_frames:
+                self.enemy_sprite = self.enemy_frames[0]
+
+        if self.player_is_attacking:
+            self.player_attack_offset += ATTACK_MOVE_SPEED * dt
+            if self.player_attack_offset >= ATTACK_MOVE_DISTANCE:
+                self.player_attack_offset = ATTACK_MOVE_DISTANCE
+        else:
+            self.player_attack_offset = max(0, self.player_attack_offset - ATTACK_MOVE_SPEED * dt)
+
+        if self.enemy_is_attacking:
+            self.enemy_attack_offset -= ATTACK_MOVE_SPEED * dt
+            if self.enemy_attack_offset <= -ATTACK_MOVE_DISTANCE:
+                self.enemy_attack_offset = -ATTACK_MOVE_DISTANCE
+        else:
+            self.enemy_attack_offset = min(0, self.enemy_attack_offset + ATTACK_MOVE_SPEED * dt)
+
         # Shake timer
         if self.enemy_shake_timer > 0:
             self.enemy_shake_timer -= dt
@@ -451,7 +615,8 @@ class BattleScene(Scene):
             if self.current_player_anim:
                 self.current_player_anim.update(dt)
             if self.message_timer <= 0:
-                self.play_player_attack_anim = False
+                # stop drawing the attack effect
+                self.current_player_anim = None
                 if self.enemy_monster["hp"] <= 0:
 
                     self._handle_win()
@@ -469,7 +634,8 @@ class BattleScene(Scene):
             if self.current_enemy_anim:
                 self.current_enemy_anim.update(dt)
             if self.message_timer <= 0:
-                self.play_enemy_attack_anim = False
+                # stop drawing the attack effect
+                self.current_enemy_anim = None
                 if self.player_monster["hp"] <= 0:
                     self.message = "You fainted!"
                     self.message_timer = 2.5
@@ -511,25 +677,32 @@ class BattleScene(Scene):
             self.draw_monster_selection(screen)
             return
 
-        # 繪製敵人
+        # 計算並繪製敵我精靈（一次 blit，含攻擊位移與 shake）
+        enemy_base_offset = -5 if self.enemy_shake_timer > 0 else 0
+        enemy_base_x = 900 + enemy_base_offset
+        enemy_x = int(enemy_base_x + self.enemy_attack_offset)
+        enemy_y = 100
         if self.enemy_sprite:
-            offset = -5 if self.enemy_shake_timer > 0 else 0
-            screen.blit(self.enemy_sprite, (900 + offset, 100))
-        
-        # 繪製敵人攻擊動畫
-        if self.play_enemy_attack_anim and self.current_enemy_anim:
-            self.current_enemy_anim.draw(screen, 700, 180, scale=5)
+            screen.blit(self.enemy_sprite, (enemy_x, enemy_y))
 
-        # 繪製玩家
+        player_base_offset = -5 if self.player_shake_timer > 0 else 0
+        player_base_x = 150 + player_base_offset
+        player_x = int(player_base_x + self.player_attack_offset)
+        player_y = 250
+        player_spriteflipped = None
         if self.player_sprite:
-            offset = -5 if self.player_shake_timer > 0 else 0
             player_spriteflipped = pg.transform.flip(self.player_sprite, True, False)
-            screen.blit(player_spriteflipped, (150 + offset, 250))
-            
-        
-        # 繪製玩家攻擊動畫
-        if self.play_player_attack_anim and self.current_player_anim:
-            self.current_player_anim.draw(screen, 350, 250, scale=5, flip=True)
+            screen.blit(player_spriteflipped, (player_x, player_y))
+
+        # 繪製攻擊特效（大畫面動畫）
+        player_center_x = player_base_x - 75
+        player_center_y = player_y - 75
+        enemy_center_x = enemy_base_x - 75
+        enemy_center_y = enemy_y - 75
+        if self.current_enemy_anim:
+            self.current_enemy_anim.draw(screen, player_center_x, player_center_y, scale=5)
+        if self.current_player_anim:
+            self.current_player_anim.draw(screen, enemy_center_x, enemy_center_y, scale=5, flip=True)
 
         # HP條
         self.draw_hp_bar(screen, 650, 280, 200, 20, 
