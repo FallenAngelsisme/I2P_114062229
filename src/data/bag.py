@@ -99,7 +99,7 @@ class Bag:
         self.info_dialog_open = False
 
     def _get_monster_stats(self, mon):
-        """參考 BattleScene 的計算邏輯"""
+        """ 和BattleScene 一樣喔喔喔喔 """
         base_atk = mon.level * 2 + 20
         base_def = mon.level * 1.5 + 10
         atk = getattr(mon, 'attack', base_atk)

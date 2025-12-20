@@ -28,7 +28,7 @@ class NavigationManager:
     def start_navigation(self, tile_x, tile_y, target_map=None):
         """
         開始導航
-        - 如果 target_map 為 None，則在當前地圖尋路
+        - 如果 target_map 為 None 則在當前地圖尋路
         - 否則記錄目標，等待地圖切換後繼續
         """
         self.target_map = target_map
@@ -36,12 +36,12 @@ class NavigationManager:
         self.target_tile_y = tile_y
         
         if target_map and target_map != self.game_manager.current_map_key:
-            # ★ 跨地圖導航：先找到最近的傳送點
+            # 跨地圖導航：先找到最近的傳送點 # 用不到
             self._navigate_to_teleporter(target_map)
         else:
-            # ★ 同地圖導航
+            # 同地圖導航
             self._calculate_path(tile_x, tile_y)
-
+        #用不到
     def _navigate_to_teleporter(self, target_map):
         """找到通往目標地圖的傳送點"""
         for tp in self.game_manager.current_teleporter:
@@ -78,7 +78,7 @@ class NavigationManager:
             return
 
         # 下一個 tile 的像素中心目標
-        target_x, target_y = self.current_path[0]
+        target_x, target_y = self.current_path[0] #self.pathfinder.find_path
 
         # 玩家目前位置
         px, py = self.player.position.x, self.player.position.y

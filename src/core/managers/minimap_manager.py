@@ -17,9 +17,8 @@ class MinimapManager:
         self.scale_x = 1
         self.scale_y = 1
 
-    # ---------------------------------------------------------
-    # ⚡ 生成縮圖，只會在換地圖時呼叫
-    # ---------------------------------------------------------
+  
+    # 生成縮圖，只會在換地圖時呼叫
     def _generate_minimap(self):
         current_key = self.game_manager.current_map_key
         game_map = self.game_manager.maps[current_key]
@@ -40,9 +39,9 @@ class MinimapManager:
         # 記錄現在的地圖 key
         self.map_key_cached = current_key
 
-    # ---------------------------------------------------------
-    # 🖼️ 繪製小地圖
-    # ---------------------------------------------------------
+    
+    # 繪製小地圖
+    
     def draw(self, screen: pg.Surface):
 
         # 若換地圖 → 重新產生縮圖
@@ -57,18 +56,17 @@ class MinimapManager:
 
         mx, my = self.MINIMAP_POS
 
-        # -----------------------------------------------------
+        
         # 🟡 玩家位置
-        # -----------------------------------------------------
+        
         player = self.game_manager.player
         px = int(player.position.x * self.scale_x) + mx
         py = int(player.position.y * self.scale_y) + my
 
         pg.draw.circle(screen, (255, 255, 0), (px, py), 4)  # 黃色玩家點
 
-        # -----------------------------------------------------
+        
         # 🔵 NPC / 🔴 敵人 / 🟢 傳送點
-        # -----------------------------------------------------
         current_key = self.game_manager.current_map_key
 
         # NPCs
@@ -90,9 +88,8 @@ class MinimapManager:
             ty = int(tp.pos.y * self.scale_y) + my
             pg.draw.circle(screen, (0, 255, 0), (tx, ty), 4)
 
-        # -----------------------------------------------------
+        
         # 外框
-        # -----------------------------------------------------
         pg.draw.rect(
             screen,
             (255, 255, 255),
@@ -100,9 +97,9 @@ class MinimapManager:
             width=2
         )
 
-    # -----------------------------------------------------
+    
     # 線上玩家繪製（可由外部呼叫）
-    # -----------------------------------------------------
+    
     def draw_online_players(self, screen: pg.Surface, players: list[dict], current_map_key: str) -> None:
         """Draw other online players onto the minimap.
 
@@ -113,6 +110,7 @@ class MinimapManager:
             return
 
         mx, my = self.MINIMAP_POS
+        #getattr 安全地取得物件的屬性 >>> 縮放比例
         sx = getattr(self, "scale_x", 1)
         sy = getattr(self, "scale_y", 1)
 
@@ -120,6 +118,7 @@ class MinimapManager:
             try:
                 if str(p.get("map", "")) != str(current_map_key):
                     continue
+                            #如果沒有 x，預設為 0
                 ox = int(float(p.get("x", 0)) * sx) + mx
                 oy = int(float(p.get("y", 0)) * sy) + my
                 pg.draw.circle(screen, (0, 200, 200), (ox, oy), 3)

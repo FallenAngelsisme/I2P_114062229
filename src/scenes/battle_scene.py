@@ -49,7 +49,7 @@ class BattleScene(Scene):
         # 當前戰鬥中的怪獸
         self.player_monster = None
         self.enemy_monster = None
-        self.old_level = 0 # ★ NEW:
+        self.old_level = 0 #   NEW:
 
         # Buff系統
         self.player_attack_buff = 0
@@ -841,7 +841,7 @@ class BattleScene(Scene):
         pg.draw.rect(screen, (255, 255, 255), (x, y, w, h), 2)
 
 
-    # ★ NEW: 戰鬥勝利後的處理邏輯 (Requirement 1 & 2)
+    #   NEW: 戰鬥勝利後的處理邏輯 (Requirement 1 & 2)
     def _handle_win(self):
         # 1. 處理戰鬥中的怪獸升級和回血
         if self.player_monster and self.selected_monster_index is not None:
@@ -849,7 +849,7 @@ class BattleScene(Scene):
             monster_in_bag = self.game_manager.bag._monsters_data[self.selected_monster_index]
             
             # 紀錄升級前等級
-            self.old_level = monster_in_bag.level # ★
+            self.old_level = monster_in_bag.level #  
 
             # 升級
             monster_in_bag.level += 1
@@ -862,7 +862,7 @@ class BattleScene(Scene):
             self.evolution_message = None
             if self.game_manager and self.game_manager.evolution_manager:
                 if self.game_manager.evolution_manager.can_evolve(monster_in_bag):
-                    # ★ NEW: 如果可以進化，則提示玩家
+                    #   NEW: 如果可以進化，則提示玩家
                     self.evolution_message = f"{monster_in_bag.name} is ready to Evolve!"
                     
             # 3. 處理金錢獎勵 (假設固定獎勵 25)
@@ -873,7 +873,7 @@ class BattleScene(Scene):
             # 4. 設置勝利和升級訊息
             self.battle_state = "game_over" 
             
-            # ★ MODIFIED: 顯示升級資訊，如果同時有進化提示則組合
+            #   MODIFIED: 顯示升級資訊，如果同時有進化提示則組合
             level_msg = f"{monster_in_bag.name} LV UP! ({self.old_level} -> {monster_in_bag.level}) Reward: {money_reward} Money."
             
             if self.evolution_message:
