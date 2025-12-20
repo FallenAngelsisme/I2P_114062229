@@ -266,8 +266,10 @@ class GameScene(Scene):
         self.nav_ui = NavigationUI(self.nav_manager, self.font_large, self.font_medium)
     @override
     def exit(self) -> None:
-        if self.online_manager:
-            self.online_manager.exit()
+        # Keep online connection alive when switching scenes (e.g. to battle)
+        # to preserve the same player id and chat state. Do not call
+        # `self.online_manager.exit()` here to avoid reconnects on return.
+        pass
        
     @override
     def update(self, dt: float):

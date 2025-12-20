@@ -55,6 +55,7 @@ class OnlineManager:
         self._update_queue = queue.Queue(maxsize=10)
         self._chat_out_queue = queue.Queue(maxsize=50)
         self._chat_messages = deque(maxlen=200)
+        self._seen_chat_ids: set[int] = set()
         self._last_chat_id = 0
 
         Logger.info("OnlineManager initialized")
@@ -215,10 +216,18 @@ class OnlineManager:
                 messages = data.get("messages", [])
                 with self._lock:
                     for m in messages:
+                        try:
+                            mid = int(m.get("id", 0))
+                        except Exception:
+                            mid = 0
+                        # Ignore messages we've already seen to avoid duplicates
+                        if mid and mid in self._seen_chat_ids:
+                            continue
                         self._chat_messages.append(m)
-                        mid = int(m.get("id", self._last_chat_id))
-                        if mid > self._last_chat_id:
-                            self._last_chat_id = mid
+                        if mid:
+                            self._seen_chat_ids.add(mid)
+                            if mid > self._last_chat_id:
+                                self._last_chat_id = mid
 
             elif msg_type == "error":
                 Logger.warning(f"Server error: {data.get('message', 'unknown')}")

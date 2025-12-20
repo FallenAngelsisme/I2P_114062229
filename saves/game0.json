@@ -16,7 +16,8 @@
           "destination": "hospital.tmx",
           "exit_x": 16,
           "exit_y": 16
-        },{
+        },
+        {
           "x": 39,
           "y": 29,
           "destination": "ocean.tmx",
@@ -30,7 +31,6 @@
           "exit_x": 3,
           "exit_y": 10
         }
-        
       ],
       "player": {
         "x": 16.0,
@@ -38,10 +38,10 @@
       },
       "enemy_trainers": [
         {
-          "x": 20.0,
+          "x": 16.15639999999995,
           "y": 31.0,
           "classification": "moving",
-          "facing": "RIGHT",
+          "facing": "LEFT",
           "max_tiles": 2
         },
         {
@@ -52,17 +52,17 @@
           "max_tiles": 2
         },
         {
-          "x": 30.082399999999865,
+          "x": 26.238799999999816,
           "y": 30.0,
           "classification": "moving",
-          "facing": "RIGHT",
+          "facing": "LEFT",
           "max_tiles": 2
         },
         {
-          "x": 36.81280000000005,
+          "x": 31.116399999999967,
           "y": 13.0,
           "classification": "moving",
-          "facing": "LEFT",
+          "facing": "RIGHT",
           "max_tiles": 3
         }
       ],
@@ -74,16 +74,16 @@
           "facing": "DOWN"
         },
         {
-        "x": 27.0,
-        "y": 26.0,
-        "type": "talk",
-        "facing": "LEFT",
-        "dialogues": [
-          "u r gay",
-          "u r definetly gay",
-          "gay as fxck"
-        ]
-      }
+          "x": 27.0,
+          "y": 26.0,
+          "type": "talk",
+          "dialogues": [
+            "u r gay",
+            "u r definetly gay",
+            "gay as fxck"
+          ],
+          "facing": "LEFT"
+        }
       ]
     },
     {
@@ -124,17 +124,19 @@
           "max_tiles": 3
         }
       ],
-      "npcs": [{
-        "x": 18.0,
-        "y": 7.0,
-        "type": "talk",
-        "facing": "DOWN",
-        "dialogues": [
-          "RUN!!!!! Escape from CS!!",
-          "DON'T LOOK BACK!!!",
-          "DON'T STOP RUNNING!!!"
-        ]
-      }]
+      "npcs": [
+        {
+          "x": 18.0,
+          "y": 7.0,
+          "type": "talk",
+          "dialogues": [
+            "RUN!!!!! Escape from CS!!",
+            "DON'T LOOK BACK!!!",
+            "DON'T STOP RUNNING!!!"
+          ],
+          "facing": "DOWN"
+        }
+      ]
     },
     {
       "path": "ocean.tmx",
@@ -205,18 +207,20 @@
         "y": 16.0
       },
       "enemy_trainers": [],
-      "npcs": [{
+      "npcs": [
+        {
           "x": 15.0,
           "y": 3.0,
           "type": "shop",
           "facing": "DOWN"
-        }]
+        }
+      ]
     }
   ],
   "current_map": "map.tmx",
   "player": {
-    "x": 16.224000000000009,
-    "y": 30.660000000000007
+    "x": 24.0,
+    "y": 25.72800000000001
   },
   "bag": {
     "monsters": [

@@ -78,6 +78,7 @@ class PlayerHandler:
             self._next_id += 1
             # Initialize with default direction and moving state
             self.players[pid] = Player(pid, 0.0, 0.0, "", "", False, time.monotonic())
+            print(f"[PlayerHandler] register -> id={pid}")
             return pid
 
     def update(self, pid: int, x: float, y: float, map_name: str, direction=None, moving=False) -> bool:
@@ -105,3 +106,16 @@ class PlayerHandler:
                     "moving": p.moving
                 }
             return player_list
+
+    def unregister(self, pid: int) -> None:
+        """Remove a player (called when a client disconnects).
+
+        Safely removes the player entry if present. This prevents stale
+        placeholder players from lingering until the timeout.
+        """
+        with self._lock:
+            if pid in self.players:
+                _ = self.players.pop(pid, None)
+                # Note: do NOT recycle IDs to avoid reusing an ID that
+                # may still be referenced in recent chat/history by clients.
+                print(f"[PlayerHandler] unregister -> id={pid}")

@@ -102,10 +102,12 @@ async def handle_client(websocket: Any):
     
     async with CLIENTS_LOCK:
         CONNECTED_CLIENTS.add(websocket)
+        print(f"[Server] client connected; total_clients={len(CONNECTED_CLIENTS)}")
     
     try:
         # Register player on connection - server assigns ID
         player_id = PLAYER_HANDLER.register()
+        print(f"[Server] assigned player_id={player_id} for websocket={websocket}")
         await websocket.send(json.dumps({
             "type": "registered",
             "id": player_id
@@ -192,8 +194,10 @@ async def handle_client(websocket: Any):
         # Unregister player on disconnect
         if player_id >= 0:
             PLAYER_HANDLER.unregister(player_id)
+            print(f"[Server] unregistered player_id={player_id}")
         async with CLIENTS_LOCK:
             CONNECTED_CLIENTS.discard(websocket)
+            print(f"[Server] client disconnected; total_clients={len(CONNECTED_CLIENTS)}")
 
 
 async def main():
