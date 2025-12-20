@@ -1,5 +1,5 @@
 import pygame as pg
-from src.utils import GameSettings
+from src.utils import GameSettings, Direction
 from src.entities.pathfinding import Pathfinder
 
 class NavigationManager:
@@ -86,11 +86,27 @@ class NavigationManager:
         # 移動方向
         dx, dy = target_x - px, target_y - py
         dist = (dx*dx + dy*dy)**0.5
+        if abs(dx) > abs(dy):
+            if dx > 0:
+                self.player.direction = Direction.RIGHT
+                self.player.animation.switch("right")
+            else:
+                self.player.direction = Direction.LEFT
+                self.player.animation.switch("left")
+        else:
+            if dy > 0:
+                self.player.direction = Direction.DOWN
+                self.player.animation.switch("down")
+            else:
+                self.player.direction = Direction.UP
+                self.player.animation.switch("up")
 
+        self.player.is_moving = True
         # 到了 tile 中心
         if dist < 2:
             self.current_path.pop(0)
             if not self.current_path:
+                self.player.is_moving = False  
                 self.cancel_navigation()
             return
 
