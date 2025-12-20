@@ -128,7 +128,7 @@ EVOLUTION_DATA = {
         "stat_bonus": {"hp": 20, "attack": 10, "defense": 15}
     },
     "Charmeleon": {
-        "to": "Charizard",
+        "to": "chasaur",
         "level": 10,
         "sprite": "menu_sprites/menusprite9.png",
         "stat_bonus": {"hp": 50, "attack": 30, "defense": 15}
