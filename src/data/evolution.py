@@ -238,7 +238,8 @@ def apply_evolution(monster: Monster, evolution_data: dict) -> bool:
     monster.hp = min(monster.hp, monster.max_hp) # 確保不超過最大值
     
     # 3. 更新攻擊力 (假設有 attack 屬性)
-    # monster.attack += stat_bonus.get('attack', 0) 
+    monster.attack += stat_bonus.get('attack', 0) 
+    monster.defense += stat_bonus.get('defense', 0)
     
     # 4. 更新進化鏈資料 (指向下一階)
     next_evolution = EVOLUTION_DATA.get(evolve_to_name)
@@ -262,6 +263,7 @@ def evolve(monster):
     monster.max_hp += evo["stat_bonus"].get("hp", 0)
     monster.hp = monster.max_hp
     monster.attack = getattr(monster, "attack", monster.level*2 + 20) + evo["stat_bonus"].get("attack", 0)
+    monster.defense = getattr(monster, "defense", monster.level*1.5 + 10) + evo["stat_bonus"].get("defense", 0)
     return old_name, monster.name
 
 class EvolutionManager:
