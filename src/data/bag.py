@@ -278,7 +278,7 @@ class Bag:
                 hp_ratio = mon.hp / mon.max_hp
                 pg.draw.rect(screen, (0, 200, 0), (x_start + 80, y + 35, int(200 * hp_ratio), 12))
 
-                # ★ NEW: 詳細資訊按鈕 (baricon3)
+                #  NEW: 詳細資訊按鈕 (baricon3)
                 if i not in self.info_buttons:
                     self.info_buttons[i] = ImageButton(self.info_icon_img, x_start + 325, y + 10, 48, 48, lambda idx=i: self._open_info_dialog(idx))
                 info_btn = self.info_buttons[i]
@@ -286,7 +286,7 @@ class Bag:
                 self.info_button_rects[i] = info_btn
                 info_btn.draw(screen)
 
-                # ★ 進化按鈕 (baricon4)
+                #  進化按鈕 (baricon4)
                 if self.game_manager and self.game_manager.evolution_manager:
                     if self.game_manager.evolution_manager.can_evolve(mon):
                         if i not in self.evolve_buttons:

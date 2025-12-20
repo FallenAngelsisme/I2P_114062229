@@ -97,9 +97,9 @@ class Monster: #(TypedDict)
     max_hp: int
     level: int
     sprite_path: str'''
-    
-    
-    def __init__(self, name: str, hp: int, max_hp: int, level: int, sprite_path: str,
+
+
+    def __init__(self, name: str, hp: int, max_hp: int, level: int, attack: int, defense: int, sprite_path: str,
         element: str = "Normal",
         evolve_to: str = None,
         evolve_level: int = None):
@@ -107,6 +107,8 @@ class Monster: #(TypedDict)
         self.hp = hp
         self.max_hp = max_hp
         self.level = level
+        self.attack = attack
+        self.defense = defense
         self.sprite_path = sprite_path
         self.element = element #ch3
         self.evolve_to = evolve_to
@@ -118,6 +120,8 @@ class Monster: #(TypedDict)
             "hp": self.hp,
             "max_hp": self.max_hp,
             "level": self.level,
+            "attack": self.attack,
+            "defense": self.defense,
             "sprite_path": self.sprite_path,
             "element": self.element,            # ★ 必須加
             "evolve_to": self.evolve_to,
@@ -131,6 +135,8 @@ class Monster: #(TypedDict)
             hp=data["hp"],
             max_hp=data["max_hp"],
             level=data["level"],
+            attack=data["attack"],
+            defense=data["defense"],
             sprite_path=data["sprite_path"],
             element=data.get("element", "Normal"),      # ★ 必須加
             evolve_to=data.get("evolve_to"),

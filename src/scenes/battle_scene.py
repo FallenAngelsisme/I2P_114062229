@@ -187,6 +187,7 @@ class BattleScene(Scene):
             "hp": template["base_hp"] + level * 2,
             "max_hp": template["base_hp"] + level * 2,
             "attack": template["base_attack"] + level* 0.4,
+            "defense": level * 1.2,
             "level": level,
             "sprite_path": template["sprite"],
             "element": template["element"],
@@ -214,6 +215,7 @@ class BattleScene(Scene):
             "hp": selected_mon.hp,
             "max_hp": selected_mon.max_hp,
             "attack": selected_mon.attack if hasattr(selected_mon, "attack") else (selected_mon.level * 2 + 20),
+            "defense": selected_mon.defense if hasattr(selected_mon, "defense") else (selected_mon.level * 1.5 + 10),
             "level": selected_mon.level,
             "name": selected_mon.name,
             "sprite_path": selected_mon.sprite_path,
@@ -330,8 +332,8 @@ class BattleScene(Scene):
         # 計算傷害
         mult = compute_element_multiplier(self.player_monster["element"], self.enemy_monster["element"])
         base_damage = self.player_monster["attack"] + self.player_attack_buff
-        damage = int((base_damage + random.randint(-5, 5)) * mult)
-        self.enemy_monster["hp"] = max(0, self.enemy_monster["hp"] - damage)
+        damage = int((base_damage + random.randint(1, 5)) * mult)
+        self.enemy_monster["hp"] = max(0, self.enemy_monster["hp"]+self.enemy_monster["defense"] - damage)
 
         # 效果訊息
         if mult > 1:
@@ -361,10 +363,10 @@ class BattleScene(Scene):
 
         mult = compute_element_multiplier(self.enemy_monster["element"], self.player_monster["element"])
         base_damage = self.enemy_monster["attack"]
-        damage = int((base_damage + random.randint(-5, 5)) * mult)
+        damage = int((base_damage + random.randint(1, 5)) * mult)
         damage = max(1, damage - self.player_defense_buff)
 
-        self.player_monster["hp"] = max(0, self.player_monster["hp"] - damage)
+        self.player_monster["hp"] = max(0, self.player_monster["hp"]+ self.player_monster["defense"] - damage)
 
         # 效果訊息
         if mult > 1:
@@ -853,7 +855,8 @@ class BattleScene(Scene):
 
             # 升級
             monster_in_bag.level += 1
-            
+            monster_in_bag.attack += 10
+            monster_in_bag.defense += 10
             # 血量更新至生命最大值
             monster_in_bag.hp = monster_in_bag.max_hp
             

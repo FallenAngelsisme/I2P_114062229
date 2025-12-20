@@ -201,7 +201,7 @@ class CatchPokemonScene(Scene):
             level = self.wild_pokemon['level']
             max_hp = 30 + (level * 5)
             caught_monster = Monster(
-                name=self.wild_pokemon['name'], hp=max_hp, max_hp=max_hp, level=level,
+                name=self.wild_pokemon['name'], hp=max_hp, max_hp=max_hp, level=level,attack = 40,defense=15,
                 sprite_path=self.wild_pokemon['sprite_image']
             )
             self.game_manager.bag.add_monster(caught_monster)
