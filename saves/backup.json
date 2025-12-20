@@ -16,16 +16,30 @@
           "destination": "hospital.tmx",
           "exit_x": 16,
           "exit_y": 16
+        },
+        {
+          "x": 39,
+          "y": 29,
+          "destination": "ocean.tmx",
+          "exit_x": 3,
+          "exit_y": 10
+        },
+        {
+          "x": 39,
+          "y": 30,
+          "destination": "ocean.tmx",
+          "exit_x": 3,
+          "exit_y": 10
         }
       ],
       "player": {
-        "x": 17.0,
-        "y": 29.0
+        "x": 16.0,
+        "y": 28.0
       },
       "enemy_trainers": [
         {
-          "x": 20.184000000000072,
-          "y": 30.0,
+          "x": 19.0,
+          "y": 31.0,
           "classification": "moving",
           "facing": "LEFT",
           "max_tiles": 2
@@ -38,35 +52,39 @@
           "max_tiles": 2
         },
         {
-          "x": 34.183999999999884,
-          "y": 30.0,
+          "x": 29.0,
+          "y": 29.0,
           "classification": "moving",
           "facing": "LEFT",
           "max_tiles": 2
         },
         {
-          "x": 42.11920000000008,
-          "y": 13.0,
+          "x": 10.0,
+          "y": 17.0,
           "classification": "moving",
-          "facing": "LEFT",
+          "facing": "RIGHT",
           "max_tiles": 3
         }
       ],
       "npcs": [
-      {
-        "type": "shop",
-        "x": 11,
-        "y": 31,
-        "facing": "DOWN"
-      },
-      {
-        "type": "talk",
-        "x": 22,
-        "y": 28,
-        "facing": "LEFT",
-        "dialogue": ["Hello!", "Welcome!"]
-      }
-    ]
+        {
+          "x": 11.0,
+          "y": 31.0,
+          "type": "shop",
+          "facing": "DOWN"
+        },
+        {
+          "x": 27.0,
+          "y": 26.0,
+          "type": "talk",
+          "dialogues": [
+            "u r gay",
+            "u r definetly gay",
+            "gay as fxck"
+          ],
+          "facing": "LEFT"
+        }
+      ]
     },
     {
       "path": "gym.tmx",
@@ -106,15 +124,29 @@
           "max_tiles": 3
         }
       ],
-      "npcs": []
+      "npcs": [
+        {
+          "x": 18.0,
+          "y": 7.0,
+          "type": "talk",
+          "dialogues": [
+            "RUN!!!!! Escape from CS!!",
+            "DON'T LOOK BACK!!!",
+            "DON'T STOP RUNNING!!!"
+          ],
+          "facing": "DOWN"
+        }
+      ]
     },
     {
       "path": "ocean.tmx",
       "teleport": [
         {
-          "x": 1,
-          "y": 11,
-          "destination": "gym.tmx"
+          "x": 0,
+          "y": 10,
+          "destination": "map.tmx",
+          "exit_x": 36,
+          "exit_y": 30
         }
       ],
       "player": {
@@ -175,13 +207,20 @@
         "y": 16.0
       },
       "enemy_trainers": [],
-      "npcs": []
+      "npcs": [
+        {
+          "x": 15.0,
+          "y": 3.0,
+          "type": "shop",
+          "facing": "DOWN"
+        }
+      ]
     }
   ],
   "current_map": "map.tmx",
   "player": {
-    "x": 17.677323809766694,
-    "y": 29.858690475583142
+    "x": 16.0,
+    "y": 28.0
   },
   "bag": {
     "monsters": [
@@ -211,7 +250,7 @@
         "max_hp": 180,
         "level": 32,
         "sprite_path": "menu_sprites/menusprite3.png",
-        "element": "Grassr",
+        "element": "Grass",
         "evolve_to": null,
         "evolve_level": null
       },
@@ -254,12 +293,22 @@
         "element": "Water",
         "evolve_to": null,
         "evolve_level": null
+      },
+      {
+        "name": "Charmander",
+        "hp": 60,
+        "max_hp": 60,
+        "level": 11,
+        "sprite_path": "menu_sprites/menusprite7.png",
+        "element": "Fire",
+        "evolve_to": null,
+        "evolve_level": null
       }
     ],
     "items": [
       {
         "name": "Potion",
-        "count": 5,
+        "count": 3,
         "sprite_path": "ingame_ui/potion.png"
       },
       {

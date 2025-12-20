@@ -219,17 +219,26 @@ class GameScene(Scene):
             
              #重建 minimap
             self.minimap = MinimapManager(self.game_manager)
-            # 確保玩家位置正確設置
+            # 確保玩家位置正確設置：優先使用存檔的玩家座標，否則回退到地圖 spawn
             if self.game_manager.player:
-                # 從存檔讀取的位置已經是像素座標
-                spawn_pos = self.game_manager.current_map.spawn
-                self.game_manager.player.position = Position(spawn_pos.x, spawn_pos.y)
-                
-                # 強制更新相機位置，避免畫面跳動
-                self.game_manager.player.animation.update_pos(self.game_manager.player.position)
-                
-                self.show_message("Game Loaded!")
-                Logger.info(f"Game loaded at position: ({spawn_pos.x}, {spawn_pos.y})")
+                try:
+                    # If from_dict recorded raw tile coords, prefer them
+                    if hasattr(self.game_manager.player, "raw_x") and hasattr(self.game_manager.player, "raw_y"):
+                        px = float(self.game_manager.player.raw_x) * GameSettings.TILE_SIZE
+                        py = float(self.game_manager.player.raw_y) * GameSettings.TILE_SIZE
+                        self.game_manager.player.position = Position(px, py)
+                    else:
+                        # Fall back to map spawn (pixel coords)
+                        spawn_pos = self.game_manager.current_map.spawn
+                        self.game_manager.player.position = Position(spawn_pos.x, spawn_pos.y)
+
+                    # 強制更新相機位置，避免畫面跳動
+                    self.game_manager.player.animation.update_pos(self.game_manager.player.position)
+
+                    self.show_message("Game Loaded!")
+                    Logger.info(f"Game loaded at position: ({self.game_manager.player.position.x}, {self.game_manager.player.position.y})")
+                except Exception as e:
+                    Logger.warning(f"Failed to set loaded player position: {e}")
             else:
                 self.show_message("Load Failed!")
                 Logger.warning("Loaded game has no player")
